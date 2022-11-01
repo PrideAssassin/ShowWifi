@@ -1,87 +1,115 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include<string.h>
+#include<string>
 #include <iostream>
+#include<vector>
 
 #define WIFI_NAME_LENGTH 240
+using namespace std;
 
+void describe();
+void get_name();
+void get_password(int);
+void no_wifi();
+vector<string> wifi_name;
 
-
-
-FILE * file;											//è·å–å‘½ä»¤è¾“å‡ºæµ
-char line[WIFI_NAME_LENGTH];							//è·å–ä¸€è¡Œçš„é•¿åº¦
-char wifi_name[100][100] = {};							//wifiåç§°
-char * str;
-char buf[100];
+FILE* file;											//»ñÈ¡ÃüÁîÊä³öÁ÷
+char line[WIFI_NAME_LENGTH];							//»ñÈ¡Ò»ĞĞµÄ³¤¶È
+string name;
+string password;
+char buf[250];
 
 int main()
-{	
+{
+	describe();									// ³ÌĞòÃèÊö
+	system("color 06");							//¸Ä±ä¿ØÖÆÌ¨ÑÕÉ«
 	
-
-	system("color 06");																			//æ”¹å˜æ§åˆ¶å°é¢œè‰²
-	printf(
-		"               ShowWifi\n\n"	
-		"          ç®€ä»‹ï¼šæŸ¥çœ‹æœ¬æœºè¿æ¥è¿‡çš„æ‰€æœ‰wifiå¯†ç ï¼Œ\n\n"
-		"          è¯´æ˜ï¼š\n"
-		"            1. è¯¥è½¯ä»¶ä¸€èˆ¬ç”¨äºç¬”è®°æœ¬ï¼›å°å¼ç”µè„‘ä¸€èˆ¬éƒ½æ²¡æœ‰æ— çº¿ç½‘å¡æ²¡æœ‰wifiè¿æ¥è®°å½•ç”¨ä¸äº†\n"
-		"            2. åªèƒ½åœ¨windowsä¸‹ä½¿ç”¨ã€‚é€‰æ‹©wifiåºåˆ—æ•°å­—æ—¶åˆ«ä¹±è¾“å…¥ï¼Œç¨‹åºæœ‰Bugï¼Œæˆ‘æ‡’å¾—æ”¹äº†ï¼\n"
-		"            3. é€‰æ‹©wifiåºåˆ—æ•°å­—æ—¶åˆ«ä¹±è¾“å…¥ï¼Œç¨‹åºæœ‰Bugï¼Œæˆ‘æ‡’å¾—æ”¹äº†ï¼\n\n"
-		"          ç‰ˆæœ¬ï¼šv1.0\n"
-		"          ä½œè€…ï¼šPrideAssassin\n\n\n\n"
-		 );
-	
-
+	// ÔËĞĞÁ÷³Ì
 	while (true)
 	{
-		printf("-----------å½“å‰è®¾å¤‡æ‰€æœ‰è¿æ¥è¿‡çš„wifi-------------\n\n");
-									
-		char wifi_history[] = "netsh wlan show profile | find \"æ‰€æœ‰ç”¨æˆ·é…ç½®æ–‡ä»¶\" ";					//cmdå‘½ä»¤ï¼šæŸ¥çœ‹æ›¾ç»è¿æ¥è¿‡çš„wifi
-		int x = 0;																						//wifiåºå·
-		
-		file=_popen(wifi_history,"r");																	//ä½¿ç”¨popenæ‰§è¡Œå‘½ä»¤ï¼Œè·å–å‘½ä»¤è¾“å‡º
+		cout << "-----------µ±Ç°Éè±¸ËùÓĞÁ¬½Ó¹ıµÄwifi-------------\n" << endl;
+		get_name();																		// »ñÈ¡wifiÁĞ±í
+		no_wifi();																		// µ±Ç°Ã»ÓĞ»ñÈ¡µ½wifiÁĞ±í
+		int serial = 0;																					
+		cout << "\n\nÑ¡ÔñĞèÒª²é¿´ÃÜÂëµÄwifi: " << endl;
+		cin >> serial;																	// Ñ¡Ôñwifi
+		get_password(serial);															// ÏÔÊ¾ÃÜÂë
 
-		while (fgets(line, WIFI_NAME_LENGTH, file) != NULL)															
-		{
-			x++;
-			str= strrchr(line,' ');																		//ä»å­—ç¬¦ä¸²åé¢å¾€å‰æŸ¥æ‰¾ç©ºæ ¼(è¿‡æ»¤å‡ºéœ€è¦çš„å­—ç¬¦ä¸²)
-			str = str++;																				//å­—ç¬¦ä¸²å‰é¢æœ‰ç©ºæ ¼å‰”é™¤æ‰
-			char * find=strchr(str, '\n');																//æ‰¾åˆ°å­—ç¬¦ä¸²æ¢è¡Œç¬¦çš„åœ°å€(æŒ‡é’ˆ)ï¼Œç”¨'\0'æ›¿æ¢æ‰
-			if (find)
-				*find = '\0';
+	}
+	
+	
+	
 
-			printf("%d. %s\n", x, str);																	//æŒ‰æŒ‡å®šæ ¼å¼æ‰“å°å‡ºæ¥ï¼Œä¾›ç”¨æˆ·æŸ¥çœ‹
-			strcpy_s(wifi_name[x],80,str);																//å°†æ•°æ®wifiåå­˜å…¥æ•°ç»„
-																							//æ¯å­˜ä¸€æ¬¡ï¼Œæ•°ç»„åŠ 1ï¼Œé¿å…å¤šä¸ªwifiåç§°å­˜å…¥åŒä¸€ä¸ªä½ç½®
-		}
-		if (x == 0) {
-			printf("\n--------------------------------------------------------------\n");
-			printf("\n|    Errorï¼š æœªæ‰¾åˆ°è¿æ¥è¿‡çš„wifiã€‚(è¯·ç¡®è®¤ç”µè„‘æœ‰æ— çº¿ç½‘å¡å¹¶ä¸”æ›¾ç»è¿æ¥è¿‡wifi)     \n|    è¯·é€€å‡ºç¨‹åºï¼\n");
-			printf("--------------------------------------------------------------\n\n\n\n\n");
-			system("pause&&cls");
-			exit(0);
-		}
-			
+	
+	return 0;
+}
 
-		int list = 0;																					//ç”¨æ¥è·å–ç”¨æˆ·è¾“å…¥çš„åºå·
 
-		printf("\n\n\n\né€‰æ‹©éœ€è¦æŸ¥çœ‹å¯†ç çš„wifi: ");
-		scanf_s("%d",&list,100);																		//è·å–ç”¨æˆ·è¾“å…¥						
-		
-		char order[100] = "netsh wlan show profile ";
-		char password[50] = " key=clear | find \"å…³é”®å†…å®¹\" ";
-		strcat_s(order, wifi_name[list]);
-		strcat_s(order, password);																		//cmdï¼šå­—ç¬¦ä¸²å‘½ä»¤çš„æ‹¼æ¥
+// ¶ÔÈí¼şµÄÃèÊöºÍÊ¹ÓÃ
+void describe() {
+	cout << "\
+				  ShowWifi\n\n\
+		          ¼ò½é£º²é¿´±¾»úÁ¬½Ó¹ıµÄwifiÃÜÂë¡£\n\
+		          °æ±¾£ºv1.2\n\
+		          ×÷Õß£ºPrideAssassin\n\n\n\n"
+		<< endl;
+}
 
-		file = _popen(order, "r");
-		
-		while (fgets(line, WIFI_NAME_LENGTH, file) != NULL)
-		{
-			str = strrchr(line, ' ');																//ä»å­—ç¬¦ä¸²åé¢å¾€å‰æŸ¥æ‰¾ç©ºæ ¼(è¿‡æ»¤å‡ºéœ€è¦çš„å­—ç¬¦ä¸²)
-			printf("å¯†ç ï¼š%s",str);																	//æŒ‰æ ¼å¼æ‰“å°å‡ºæ¥
-		}
-		
+// »ñÈ¡Á¬½Ó¹ıµÄwifiÁĞ±í
+void get_name()
+{
+	const char* wifi_history = "netsh wlan show profile | find \" ËùÓĞÓÃ»§ÅäÖÃÎÄ¼ş \" ";				   // cmdÃüÁî×Ö·û´®
+	int x = 0;																								// wifiĞòºÅ
+	file = _popen(wifi_history, "r");														//Ê¹ÓÃpopenÖ´ĞĞÃüÁî£¬»ñÈ¡ÃüÁîÊä³ö
+	while (fgets(buf, WIFI_NAME_LENGTH, file) != NULL)
+	{
+		x++;
+		name= strrchr(buf, ' ');																//´Ó×Ö·û´®ºóÃæÍùÇ°²éÕÒ¿Õ¸ñ(¹ıÂË³öĞèÒªµÄ×Ö·û´®)																		
+		name.erase(name.begin(), ++(name.begin()));											//É¾³ı×Ö·û´®Ç°Ãæ¿Õ¸ñ
+		name.pop_back();
+		cout << x << ". " << name << endl;																// ÏÔÊ¾wifiÁĞ±í
+		wifi_name.push_back(name);
+	}
+}
+
+// »ñÈ¡ËùÑ¡wifiµÄÃÜÂë
+void get_password(int serial)
+{
+	--serial;
+	if (serial<0||serial>=wifi_name.size())
+	{
+		cout << "\
+					--------------------------------------\n\
+					error£ºÇëÊäÈëwifiÃû×ÖÇ°Ãæ£¬¶ÔÓ¦µÄÊı×Ö\n\
+					---------------------------------------\n\
+			" << endl;
+		wifi_name.clear();
+		system("pause&&cls");
+		return;
+	}
+
+	auto cmd = "netsh wlan show profile " + wifi_name[serial] + " key=clear | find \"¹Ø¼üÄÚÈİ\" ";			//	cmdÃüÁîµÄÆ´½Ó
+	const char* cmd1 = cmd.c_str();																		// ½«stringÀàĞÍ×ªÎª_popen¿ÉÓÃµÄcÀàĞÍ
+	file = _popen(cmd1, "r");
+
+	while (fgets(buf, WIFI_NAME_LENGTH, file) != NULL)
+	{
+		password = strrchr(buf, ' ');																//´Ó×Ö·û´®ºóÃæÍùÇ°²éÕÒ¿Õ¸ñ(¹ıÂË³öĞèÒªµÄ×Ö·û´®)
+		cout << "ÃÜÂë£º" << password << endl;
+		wifi_name.clear();
 		system("pause&&cls");
 	}
-	return 0;
+}
+
+// Î´ÄÜÕÒµ½wifi
+void no_wifi() 
+{
+	if (wifi_name.size() == 0) {
+		printf("\n--------------------------------------------------------------\n");
+		printf("\n|    Error£º Î´ÕÒµ½Á¬½Ó¹ıµÄwifi¡£(ÇëÈ·ÈÏµçÄÔÓĞÎŞÏßÍø¿¨²¢ÇÒÔø¾­Á¬½Ó¹ıwifi)     \n|    ÇëÍË³ö³ÌĞò£¡\n");
+		printf("--------------------------------------------------------------\n\n\n\n\n");
+		system("pause&&cls");
+		exit(0);
+	}
 }
 
